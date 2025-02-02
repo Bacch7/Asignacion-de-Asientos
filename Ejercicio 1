@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+
+class Persona
+{
+    public string Nombre { get; set; }
+
+    public Persona(string nombre)
+    {
+        Nombre = nombre;
+    }
+}
+
+class Atraccion
+{
+    private Queue<Persona> colaEspera = new Queue<Persona>();
+    private List<Persona> asientos = new List<Persona>();
+    private const int capacidad = 30;
+
+    public void AgregarPersonaALaCola(string nombre)
+    {
+        colaEspera.Enqueue(new Persona(nombre));
+        Console.WriteLine($"{nombre} ha sido agregado a la cola.");
+    }
+
+    public void AsignarAsientos()
+    {
+        while (asientos.Count < capacidad && colaEspera.Count > 0)
+        {
+            Persona persona = colaEspera.Dequeue();
+            asientos.Add(persona);
+            Console.WriteLine($"{persona.Nombre} ha subido a la atracción.");
+        }
+
+        if (asientos.Count == capacidad)
+        {
+            Console.WriteLine("Todos los asientos han sido ocupados.");
+        }
+    }
+
+    public void MostrarEstado()
+    {
+        Console.WriteLine("\nEstado de la atracción:");
+        Console.WriteLine("Personas en la cola: " + colaEspera.Count);
+        Console.WriteLine("Asientos ocupados: " + asientos.Count + "/" + capacidad);
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Atraccion atraccion = new Atraccion();
+
+        // Simulación de llegada de personas
+        string[] nombres = { "Ana", "Carlos", "Luis", "Maria", "Pedro", "Sofia", "Miguel", "Lucia", "Diego", "Elena" };
+        foreach (var nombre in nombres)
+        {
+            atraccion.AgregarPersonaALaCola(nombre);
+        }
+
+        // Asignar asientos
+        atraccion.AsignarAsientos();
+
+        // Mostrar estado final
+        atraccion.MostrarEstado();
+    }
+}
