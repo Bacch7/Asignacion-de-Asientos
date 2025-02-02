@@ -1,0 +1,96 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+
+class Persona
+{
+    public string Nombre { get; set; }
+
+    public Persona(string nombre)
+    {
+        Nombre = nombre;
+    }
+}
+
+class Auditorio
+{
+    private Queue<Persona> colaEspera1 = new Queue<Persona>();
+    private Queue<Persona> colaEspera2 = new Queue<Persona>();
+    private List<Persona> asientos = new List<Persona>();
+    private const int capacidad = 100;
+    private object lockObject = new object();
+
+    public void AgregarPersonaALaCola(string nombre, int cola)
+    {
+        lock (lockObject)
+        {
+            if (cola == 1)
+                colaEspera1.Enqueue(new Persona(nombre));
+            else
+                colaEspera2.Enqueue(new Persona(nombre));
+
+            Console.WriteLine($"{nombre} ha sido agregado a la cola {cola}.");
+        }
+    }
+
+    public void AsignarAsientos()
+    {
+        while (asientos.Count < capacidad && (colaEspera1.Count > 0 || colaEspera2.Count > 0))
+        {
+            lock (lockObject)
+            {
+                if (colaEspera1.Count > 0)
+                {
+                    Persona persona = colaEspera1.Dequeue();
+                    asientos.Add(persona);
+                    Console.WriteLine($"{persona.Nombre} ha ingresado al auditorio desde la cola 1.");
+                }
+                
+                if (asientos.Count < capacidad && colaEspera2.Count > 0)
+                {
+                    Persona persona = colaEspera2.Dequeue();
+                    asientos.Add(persona);
+                    Console.WriteLine($"{persona.Nombre} ha ingresado al auditorio desde la cola 2.");
+                }
+            }
+        }
+
+        Console.WriteLine("Todos los asientos han sido ocupados.");
+    }
+
+    public void MostrarEstado()
+    {
+        Console.WriteLine("\nEstado del auditorio:");
+        Console.WriteLine("Personas en la cola 1: " + colaEspera1.Count);
+        Console.WriteLine("Personas en la cola 2: " + colaEspera2.Count);
+        Console.WriteLine("Asientos ocupados: " + asientos.Count + "/" + capacidad);
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Auditorio auditorio = new Auditorio();
+
+        // Simulación de llegada de personas a dos colas
+        string[] nombres1 = { "Ana", "Carlos", "Luis", "Maria", "Pedro" };
+        string[] nombres2 = { "Sofia", "Miguel", "Lucia", "Diego", "Elena" };
+
+        foreach (var nombre in nombres1)
+        {
+            auditorio.AgregarPersonaALaCola(nombre, 1);
+        }
+
+        foreach (var nombre in nombres2)
+        {
+            auditorio.AgregarPersonaALaCola(nombre, 2);
+        }
+
+        // Asignar asientos
+        auditorio.AsignarAsientos();
+
+        // Mostrar estado final
+        auditorio.MostrarEstado();
+    }
+}
